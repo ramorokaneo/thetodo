@@ -57,3 +57,8 @@ button,
 select {
   font-size: 14px;
 }
+
+.timestamp {
+  font-size: 12px;
+  color: #777;
+}

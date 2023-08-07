@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './App.css';
+import Login from './Login';
 
 const priorityColors = {
   mostImportant: 'red',
@@ -11,6 +12,7 @@ function App() {
   const [tasks, setTasks] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [editIndex, setEditIndex] = useState(-1);
+  const [loggedIn, setLoggedIn] = useState(false);
 
   const handleInputChange = (event) => {
     setInputValue(event.target.value);
@@ -64,8 +66,14 @@ function App() {
     setTasks(updatedTasks);
   };
 
+  const handleLogin = () => {
+    setLoggedIn(true);
+  };
+
   return (
     <div className="App">
+    {loggedIn ? (
+      <>
       <h1>Todo List</h1>
       <div className="input-container">
         <input
@@ -126,6 +134,9 @@ function App() {
           </li>
         ))}
       </ul>
+    ) : (
+      <Login onLogin={handleLogin}
+      )}
     </div>
   );
 }
