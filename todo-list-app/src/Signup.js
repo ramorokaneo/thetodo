@@ -5,6 +5,7 @@ const Signup = ({ onSignup }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isRegistered, setIsRegistered] = useState(false);
+  const [error, setError] = useState('');
 
   const handleNameChange = (event) => {
     setName(event.target.value);
@@ -21,11 +22,16 @@ const Signup = ({ onSignup }) => {
   const handleSignup = (event) => {
     event.preventDefault();
 
-    
-    const userData = { name, email, password };
-    onSignup(userData);
-
-    setIsRegistered(true); 
+    if (name.trim() === '' || email.trim() === '' || password.trim() === '') {
+      setError('Please fill in all fields.');
+    } else if (password.length < 6) {
+      setError('Password should be at least 6 characters long.');
+    } else {
+      setError('');
+      const userData = { name, email, password };
+      onSignup(userData);
+      setIsRegistered(true);
+    }
   };
 
   return (
@@ -65,6 +71,7 @@ const Signup = ({ onSignup }) => {
               required
             />
           </div>
+          {error && <p style={{ color: 'red' }}>{error}</p>}
           <button type="submit">Signup</button>
         </>
       )}
