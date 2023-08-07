@@ -1,20 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import './App.css';
-import Login from './Login';
-import Signup from './Signup';
 
-const priorityColors = {
-  mostImportant: 'red',
-  important: 'orange',
-  leastImportant: 'green',
-};
+const API_BASE_URL = 'http://localhost:5000';
 
-function App() {
+const App = () => {
   const [tasks, setTasks] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [editIndex, setEditIndex] = useState(-1);
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [showSignup, setShowSignup] = useState(false);
+
+  useEffect(() => {
+    // Fetch tasks data from JSON Server API
+    axios.get(`${API_BASE_URL}/tasks`)
+      .then((response) => {
+        setTasks(response.data);
+      })
+      .catch((error) => {
+        console.error('Error fetching tasks:', error);
+      });
+  }, []);
 
   const handleInputChange = (event) => {
     setInputValue(event.target.value);
@@ -29,30 +33,40 @@ function App() {
     if (tasks.length < 12) {
       if (inputValue.trim() !== '') {
         if (editIndex === -1) {
-          setTasks([
-            ...tasks,
-            {
-              text: inputValue,
-              timestamp: getCurrentTimestamp(),
-              priority: 'leastImportant',
-              completed: false,
-            },
-          ]);
-        } else {
-          const updatedTasks = [...tasks];
-          updatedTasks[editIndex] = {
+          // Create a new task
+          axios.post(`${API_BASE_URL}/tasks`, {
             text: inputValue,
             timestamp: getCurrentTimestamp(),
-            priority: updatedTasks[editIndex].priority,
-            completed: updatedTasks[editIndex].completed,
-            completedTimestamp: updatedTasks[editIndex].completed
-              ? getCurrentTimestamp()
-              : null,
-          };
-          setTasks(updatedTasks);
-          setEditIndex(-1);
+            priority: 'leastImportant',
+            completed: false,
+            completedTimestamp: null,
+          })
+          .then((response) => {
+            setTasks([...tasks, response.data]);
+            setInputValue('');
+          })
+          .catch((error) => {
+            console.error('Error adding task:', error);
+          });
+        } else {
+          // Update an existing task
+          const taskToUpdate = tasks[editIndex];
+          axios.put(`${API_BASE_URL}/tasks/${taskToUpdate.id}`, {
+            ...taskToUpdate,
+            text: inputValue,
+            timestamp: getCurrentTimestamp(),
+          })
+          .then((response) => {
+            const updatedTasks = [...tasks];
+            updatedTasks[editIndex] = response.data;
+            setTasks(updatedTasks);
+            setEditIndex(-1);
+            setInputValue('');
+          })
+          .catch((error) => {
+            console.error('Error updating task:', error);
+          });
         }
-        setInputValue('');
       }
     } else {
       alert('You can add up to 12 items at a time.');
@@ -60,116 +74,50 @@ function App() {
   };
 
   const handleEditTask = (index) => {
-    setInputValue(tasks[index].text);
+    const taskToEdit = tasks[index];
+    setInputValue(taskToEdit.text);
     setEditIndex(index);
   };
 
   const handleDeleteTask = (index) => {
-    const updatedTasks = [...tasks];
-    updatedTasks.splice(index, 1);
-    setTasks(updatedTasks);
-    setEditIndex(-1);
-  };
-
-  const handlePriorityChange = (index, newPriority) => {
-    const updatedTasks = [...tasks];
-    updatedTasks[index].priority = newPriority;
-    setTasks(updatedTasks);
-  };
-
-  const handleToggleCompleted = (index) => {
-    const updatedTasks = [...tasks];
-    updatedTasks[index].completed = !updatedTasks[index].completed;
-    updatedTasks[index].completedTimestamp = updatedTasks[index].completed
-      ? getCurrentTimestamp()
-      : null;
-    setTasks(updatedTasks);
-  };
-
-  const handleLogin = () => {
-    setLoggedIn(true);
-  };
-
-  const handleSignup = (userData) => {
-    console.log('New user data', userData);
-    setLoggedIn(false);
-    setShowSignup(false);
+    const taskToDelete = tasks[index];
+    axios.delete(`${API_BASE_URL}/tasks/${taskToDelete.id}`)
+      .then(() => {
+        const updatedTasks = tasks.filter((task) => task.id !== taskToDelete.id);
+        setTasks(updatedTasks);
+        setEditIndex(-1);
+      })
+      .catch((error) => {
+        console.error('Error deleting task:', error);
+      });
   };
 
   return (
     <div className="App">
-      {loggedIn ? (
-        <>
-          <h1>Todo List</h1>
-          <div className="input-container">
-            <input
-              type="text"
-              placeholder="Enter your task..."
-              value={inputValue}
-              onChange={handleInputChange}
-            />
-            <button
-              style={{ background: 'black', color: 'white' }}
-              onClick={handleAddTask}
-            >
-              {editIndex === -1 ? 'Add Task' : 'Update Task'}
-            </button>
-          </div>
-          <ul>
-            {tasks.map((task, index) => (
-              <li key={index}>
-                <div>
-                  <input
-                    type="checkbox"
-                    checked={task.completed}
-                    onChange={() => handleToggleCompleted(index)}
-                  />
-                  <span
-                    style={{
-                      color: priorityColors[task.priority],
-                      textDecoration: task.completed ? 'line-through' : 'none',
-                    }}
-                  >
-                    {task.text}
-                  </span>
-                  <span className="timestamp">Added on: {task.timestamp}</span>
-                  {task.completed && (
-                    <span className="timestamp">
-                      Completed on: {task.completedTimestamp}
-                    </span>
-                  )}
-                </div>
-                <button
-                  style={{ background: 'black', color: 'white' }}
-                  onClick={() => handleEditTask(index)}
-                >
-                  Edit
-                </button>
-                <button
-                  style={{ background: 'black', color: 'white' }}
-                  onClick={() => handleDeleteTask(index)}
-                >
-                  Delete
-                </button>
-                <select
-                  value={task.priority}
-                  onChange={(e) => handlePriorityChange(index, e.target.value)}
-                >
-                  <option value="mostImportant">Most Important</option>
-                  <option value="important">Important</option>
-                  <option value="leastImportant">Least Important</option>
-                </select>
-              </li>
-            ))}
-          </ul>
-        </>
-      ) : showSignup ? (
-        <Signup onSignup={handleSignup} />
-      ) : (
-        <Login onLogin={handleLogin} onShowSignup={() => setShowSignup(true)} />
-      )}
+      <h1>Todo List</h1>
+      <div className="input-container">
+        <input
+          type="text"
+          placeholder="Enter your task..."
+          value={inputValue}
+          onChange={handleInputChange}
+        />
+        <button onClick={handleAddTask}>
+          {editIndex === -1 ? 'Add Task' : 'Update Task'}
+        </button>
+      </div>
+      <ul>
+        {tasks.map((task, index) => (
+          <li key={task.id}>
+            <span>{task.text}</span>
+            {/* Display other task properties */}
+            <button onClick={() => handleEditTask(index)}>Edit</button>
+            <button onClick={() => handleDeleteTask(index)}>Delete</button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
-}
+};
 
 export default App;

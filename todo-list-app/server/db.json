@@ -1,0 +1,29 @@
+{
+    "tasks": [
+      {
+        "id": 1,
+        "text": "Task 1",
+        "timestamp": "2023-08-08 10:00 AM",
+        "priority": "mostImportant",
+        "completed": false,
+        "completedTimestamp": null
+      },
+      {
+        "id": 2,
+        "text": "Task 2",
+        "timestamp": "2023-08-08 11:00 AM",
+        "priority": "important",
+        "completed": false,
+        "completedTimestamp": null
+      },
+      {
+        "id": 3,
+        "text": "Task 3",
+        "timestamp": "2023-08-08 12:00 PM",
+        "priority": "leastImportant",
+        "completed": false,
+        "completedTimestamp": null
+      }
+    ]
+  }
+  
