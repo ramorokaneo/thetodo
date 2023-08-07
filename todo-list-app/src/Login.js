@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const Login = ({ onLogin }) => {
+const Login = ({ onLogin, onShowSignup }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loggedIn, setLoggedIn] = useState(false);
@@ -16,11 +16,12 @@ const Login = ({ onLogin }) => {
   const handleLogin = (event) => {
     event.preventDefault();
 
-    if (username === 'user' && password === 'password') {
+    
+    if (username === 'user@example.com' && password === 'password') {
       setLoggedIn(true);
       onLogin();
     } else {
-      alert('Invalid username or password. Please try again.');
+      alert('Invalid email or password. Please try again.');
     }
   };
 
@@ -28,7 +29,7 @@ const Login = ({ onLogin }) => {
     <form onSubmit={handleLogin}>
       <h2>Login</h2>
       <div>
-        <label htmlFor="username">Username:</label>
+        <label htmlFor="username">Email:</label>
         <input
           type="text"
           id="username"
@@ -48,6 +49,7 @@ const Login = ({ onLogin }) => {
         />
       </div>
       <button type="submit">Login</button>
+      <button type="button" onClick={onShowSignup}>Signup</button>
     </form>
   );
 };
